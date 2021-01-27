@@ -1,17 +1,11 @@
-version: '3.9'
 services:
-  server:
-    image: alpine
-    ports:
-      - '8080'
-    build: ./server/
-    volumes:
-      - './server:/server'
-  creator:
-    image: alpine
-    ports:
-      - '8080'
-    build: ./creator/
-    volumes:
-      - './creator:/creator'
- 
+    server:
+        image: alpine
+        ports:
+            - "8080"
+        build: ./server/
+    creator:
+        image: alpine
+        ports:
+            - "8080"
+        build: ./creator/

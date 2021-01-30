@@ -5,3 +5,9 @@ Better quality memes and less server load by decomposing them into primitives an
 - Meme creator makes content using primitives library in web editor.
 - All primitives in highest quality available are ether stored on users devices or actively shared in distributed FS
 - Lower bandwidth due to less meme templates being loaded and content sharing shifted from centralized servers to separate user nodes.
+
+# Creators & Contributors
+- Хорошаев Михаил
+- Гиль Даниил
+- Десятченко Илья
+- Косенко Дмитрий

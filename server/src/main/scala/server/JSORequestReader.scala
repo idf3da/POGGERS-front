@@ -57,7 +57,9 @@ object JSORequestReader extends App{
                     entity(as[Order]) { order =>
                         val saved: Future[Done] = saveOrder(order)
                         onSuccess(saved) { _ =>
-                            complete("order created")
+                            println("Order created: ", order)
+                            complete("Order created.")
+
                         }
                     }
                 }

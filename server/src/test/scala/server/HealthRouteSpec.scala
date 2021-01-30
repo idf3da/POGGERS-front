@@ -1,10 +1,10 @@
 package server
 
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.testkit.Specs2RouteTest
 import org.specs2.Specification
 import org.specs2.specification.core.SpecStructure
 import server.HealthRoute.healthRoute
+import akka.http.scaladsl.model.StatusCodes
 
 class HealthRouteSpec extends Specification with Specs2RouteTest {
     override def is: SpecStructure =

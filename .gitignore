@@ -7,6 +7,7 @@ server-load-test/.idea
 server-load-test/target
 server/project/project/target/
 .metals/
+server/.attach_*
 .vscode/
 
 

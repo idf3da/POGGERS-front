@@ -6,7 +6,13 @@ Better quality memes and less server load by decomposing them into primitives an
 - All primitives in highest quality available are ether stored on users devices or actively shared in distributed FS
 - Lower bandwidth due to less meme templates being loaded and content sharing shifted from centralized servers to separate user nodes.
 
-# Creators & Contributors
+## Project service scheme
+![](project-info/Service-scheme.jpg)
+
+## Project DB scheme
+![](project-info/db-scheme.png)
+
+## Creators & Contributors
 - Хорошаев Михаил
 - Гиль Даниил
 - Десятченко Илья

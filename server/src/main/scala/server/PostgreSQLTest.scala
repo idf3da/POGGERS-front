@@ -1,23 +1,49 @@
 package server
 
-import scala.slick.driver.PostgresDriver.simple._
+import slick.jdbc.H2Profile.api._
+import scala.concurrent.Future
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import java.sql.SQLException
+
+case class User(
+                       userid: Int,
+                       username: String,
+                       password: String,
+                       email: String
+               )
+
+class UsersTable(tag: Tag) extends Table[User](tag,"users") {
+    def userid = column[Int]("userid", O.PrimaryKey, O.AutoInc)
+    def username  = column[String]("username")
+    def password = column[String]("password")
+    def email = column[String]("email")
+    def * = (userid, username, password, email).mapTo[User]
+}
+
+
 
 object PostgreSQLTest extends App {
-    class Users(tag: Tag) extends Table[(Int, String, String, String)](tag, "users") {
-        def userid: Column[Int] = column[Int]("userid", O.PrimaryKey)
-        def username: Column[String] = column[String]("username")
-        def password: Column[String] = column[String]("password")
-        def email: Column[String] = column[String]("email")
-        def * = (userid, username, password, email)
-    }
 
-    val connectionUrl = "jdbc:postgresql://localhost/db1?user=postgres&password=postgres"
+        val db = Database.forConfig("db")
+        def exec [T](action: DBIO[T]): T =
+            Await.result(db.run(action), 2.seconds)
 
-    Database.forURL(connectionUrl, driver = "org.postgresql.Driver") withSession {
-        implicit session =>
-            val users = TableQuery[Users]
-            users.list foreach { row =>
-                println(row.productIterator.toList)
-            }
-    }
+        val users = TableQuery[UsersTable]
+        val query = users.filter(_.username === "Mike")
+
+
+        val newUser = Seq(User(5, "MEGACHAD", "dungeonmaster96", "asd@asd.asd"))
+
+        val insert: DBIO[Option[Int]] = users ++= newUser
+        val insertAction: Future[Option[Int]] = db.run(insert)
+        val rowCount = Await.result(insertAction, 2.seconds)
+        println(rowCount)
+
+        val updateQuery = users.filter(_.username === "MEGACHAD")
+        exec(updateQuery.map(_.email).update("definetlynotvirgin@gmail.com"))
+
+        val userAction: DBIO[Seq[User]] = users.result
+        val userFuture: Future[Seq[User]] = db.run(userAction)
+        val userResult = Await.result(userFuture, 2.seconds)
 }

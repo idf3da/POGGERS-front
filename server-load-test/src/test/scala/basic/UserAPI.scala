@@ -39,9 +39,9 @@ class UserAPI extends Simulation {
 
     setUp(scn.inject(
         nothingFor(2.seconds),
-        atOnceUsers(1),
-        rampUsers(400).during(5.seconds),
-        constantUsersPerSec(400).during(2.minutes)
+//        atOnceUsers(1),
+//        constantUsersPerSec(10).during(10.second),
+        constantUsersPerSec(400).during(1.minutes)
     ))
             .assertions(global.responseTime.max.lt(50))
             .protocols(httpConf)

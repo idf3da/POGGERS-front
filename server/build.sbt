@@ -16,5 +16,8 @@ libraryDependencies ++= Seq(
     "org.specs2" %% "specs2-core" % "4.5.1" % Test,
     "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
     "ch.qos.logback"%"logback-classic"%"1.2.3",
-    "com.typesafe.slick" %% "slick-hikaricp" % "3.3.0"
+    "com.typesafe.slick" %% "slick-hikaricp" % "3.3.0",
+    "com.pauldijou" %% "jwt-core" % "5.0.0",
+    "de.heikoseeberger" %% "akka-http-play-json" % "1.20.0",
+    "com.typesafe.play" %% "play-json" % "2.6.7"
 )

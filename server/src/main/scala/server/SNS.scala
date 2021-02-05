@@ -11,7 +11,6 @@ import akka.http.scaladsl.model.StatusCodes
 import scala.concurrent.Future
 import scala.io.StdIn
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import server.PostgreSQLTest.{db, newUser, resultFuture, users}
 import spray.json.DefaultJsonProtocol._
 import slick.jdbc.H2Profile.api._
 import slick.jdbc.H2Profile.api._

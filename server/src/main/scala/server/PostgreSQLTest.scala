@@ -47,9 +47,16 @@ object PostgreSQLTest extends App {
         Await.result(userFuture, 2.seconds)
     }
 
+    def Login() {}
+
+    def NewPost() {}
+
+    def NewComment() {}
+
     val db = Database.forConfig("db")
     val users = TableQuery[UsersTable]
     val newUser = User(1337, "name2", "password", "email2@mail.ru")
+
 
 //    val resultFuture = Register(newUser)
 //
@@ -59,21 +66,20 @@ object PostgreSQLTest extends App {
 //        case Failure(e) => println(e)
 //        case _ => println("ALL")
 //    }
-
-    val userFilter = users.filter(_.userid === 1).result
-    val resultFuture: Future[Seq[User]] = db.run(userFilter)
-
-    Try(Await.ready(resultFuture, 5.second)) match {
-        case Success(f) => f.value.get match {
-            case Success(res) => res.length match {
-                case 0 => println("Man, dis guy was not found.....")
-                case 1 => println("Jesus Christ it's Jason Born", res)
-                case _ => println("There were several users with that ID.\nSomething certainly went wrong with DB.")
-            }
-            case Failure(e) => println("NOT SUCCESS", e.getMessage)
-        }
-        case Failure(_) => println("OOPSIE THE TIMEOUT HAS HAPPENED...")
-    }
+//    val userFilter = users.filter(_.userid === 1).result
+//    val resultFuture: Future[Seq[User]] = db.run(userFilter)
+//
+//    Try(Await.ready(resultFuture, 5.second)) match {
+//        case Success(f) => f.value.get match {
+//            case Success(res) => res.length match {
+//                case 0 => println("Man, dis guy was not found.....")
+//                case 1 => println("Jesus Christ it's Jason Born", res)
+//                case _ => println("There were several users with that ID.\nSomething certainly went wrong with DB.")
+//            }
+//            case Failure(e) => println("NOT SUCCESS", e.getMessage)
+//        }
+//        case Failure(_) => println("OOPSIE THE TIMEOUT HAS HAPPENED...")
+//    }
 
 
 

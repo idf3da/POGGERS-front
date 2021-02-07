@@ -11,6 +11,7 @@ import akka.http.scaladsl.model.StatusCodes
 import scala.concurrent.Future
 import scala.io.StdIn
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import play.api.libs.json.{Json, Reads}
 import spray.json.DefaultJsonProtocol._
 import slick.jdbc.H2Profile.api._
 import slick.jdbc.H2Profile.api._
@@ -20,9 +21,46 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import java.sql.SQLException
 import scala.util.{Failure, Success, Try}
-//import server.User
-import server.UsersTable
 
+
+case class User (
+                    userid: Int,
+                    username: String,
+                    password: String,
+                    email: String
+                )
+
+object UserObj {
+    implicit val createUserRequestReads: Reads[User] = Json.reads[User]
+
+}
+
+class UsersTable(tag: Tag) extends Table[User](tag,"users") {
+    def userid = column[Int]("userid", O.PrimaryKey, O.AutoInc)
+    def username  = column[String]("username")
+    def password = column[String]("password")
+    def email = column[String]("email")
+    def * = (userid, username, password, email).mapTo[User]
+}
+
+case class RegisterUserRequest (
+                                       userid: Int,
+                                       username: String,
+                                       password: String,
+                                       email: String
+                               )
+
+//object RegisterUserRequestObj {
+//    implicit val createUserRequestReads: Reads[RegisterUserRequest] = Json.reads[RegisterUserRequest]
+//}
+
+class UsersTable(tag: Tag) extends Table[RegisterUserRequest](tag,"users") {
+    def userid = column[Int]("userid", O.PrimaryKey, O.AutoInc)
+    def username  = column[String]("username")
+    def password = column[String]("password")
+    def email = column[String]("email")
+    def * = (userid, username, password, email).mapTo[RegisterUserRequest]
+}
 
 
 object SNS extends App{
@@ -31,6 +69,7 @@ object SNS extends App{
     implicit val executionContext = system.executionContext
 
     implicit val userFormat = jsonFormat4(User)
+    implicit val RegisterUserRequestJsonFormat = jsonFormat4(RegisterUserRequest)
 
     val db = Database.forConfig("db")
     val users = TableQuery[UsersTable]

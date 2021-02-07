@@ -6,7 +6,6 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{complete, optionalHeaderValueByName, provide, _}
 import akka.http.scaladsl.server.{Directive1, Route}
-import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import org.json4s.native.JsonMethods.parse

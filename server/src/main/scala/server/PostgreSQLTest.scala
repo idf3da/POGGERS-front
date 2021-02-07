@@ -1,21 +1,10 @@
 package server
 
-import akka.Done
-import akka.http.scaladsl.model.Uri.Empty
-import akka.http.scaladsl.server.Directives.{complete, onSuccess}
-import server.JSORequestReader.{Item, orders, saveOrder}
-import server.SNS.{db, users}
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import sun.rmi.runtime.Log
-
-import scala.concurrent.duration.{SECONDS, _}
-import java.lang.Error
 import slick.jdbc.H2Profile.api._
 
-import scala.concurrent.Future
-import scala.concurrent.Await
-import java.sql.SQLException
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 case class User(
@@ -24,6 +13,12 @@ case class User(
                        password: String,
                        email: String
                )
+
+case class LoginRequest(
+                               username: String,
+                               password: String
+                       )
+
 
 class UsersTable(tag: Tag) extends Table[User](tag,"users") {
     def userid = column[Int]("userid", O.PrimaryKey, O.AutoInc)
@@ -56,33 +51,32 @@ object PostgreSQLTest extends App {
     val db = Database.forConfig("db")
     val users = TableQuery[UsersTable]
     val newUser = User(1337, "name2", "password", "email2@mail.ru")
-
-
-    var resultFuture = Register(newUser)
-
-    val result = Await.ready(resultFuture, 2.seconds)
-    result.onComplete {
-        case Success(v) => println("EEEEEEEEEEEEEE", v)
-        case Failure(e) => println(e)
-        case _ => println("ALL")
-    }
-
-//    val userFilter = users.filter(_.userid === 1).result
-//    var resultFuture: Future[Seq[User]] = db.run(userFilter)
 //
-//    Try(Await.ready(resultFuture, 5.second)) match {
-//        case Success(f) => f.value.get match {
-//            case Success(res) => res.length match {
-//                case 0 => println("Man, dis guy was not found.....")
-//                case 1 => println("Jesus Christ it's Jason Born", res)
-//                case _ => println("There were several users with that ID.\nSomething certainly went wrong with DB.")
-//            }
-//            case Failure(e) => println("NOT SUCCESS", e.getMessage)
-//        }
-//        case Failure(_) => println("OOPSIE THE TIMEOUT HAS HAPPENED...")
+//
+//    var resultFuture = Register(newUser)
+//
+//    val result = Await.ready(resultFuture, 2.seconds)
+//    result.onComplete {
+//        case Success(v) => println("EEEEEEEE", v)
+//        case Failure(e) => println(e)
+//        case _ => println("ALL")
 //    }
 
+    def userLogin(loginRequest: LoginRequest): String = {
+        val usernameFilter = users.filter(_.username === loginRequest.username).result
+        val resultFuture: Future[Seq[User]] = db.run(usernameFilter)
+        Try(Await.ready(resultFuture, 5.second)) match {
+            case Success(f) => f.value.get match {
+                case Success(res) => res.length match {
+                    case 1 => if (res.head.password == loginRequest.password) "Login successful." else "Wrong password."
+                    case 0 => "User not found."
+                    case _ => "Several users found."
+                }
+                case Failure(e) => s"Login DB ERROR: ${e.getMessage}"
+            }
+            case Failure(e) => s"DB timeout: ${e.getMessage}"
+        }
+    }
 
-
-
+    userLogin(LoginRequest("username", "password"))
 }

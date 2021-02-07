@@ -20,7 +20,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import java.sql.SQLException
 import scala.util.{Failure, Success, Try}
-import server.User
+//import server.User
 import server.UsersTable
 
 

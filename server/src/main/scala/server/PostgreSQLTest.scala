@@ -58,16 +58,17 @@ object PostgreSQLTest extends App {
     val newUser = User(1337, "name2", "password", "email2@mail.ru")
 
 
-//    val resultFuture = Register(newUser)
-//
-//    val result = Await.ready(resultFuture, 2.seconds)
-//    result.onComplete {
-//        case Success(v) => println("EEEEEEEEEEEEEE", v)
-//        case Failure(e) => println(e)
-//        case _ => println("ALL")
-//    }
+    var resultFuture = Register(newUser)
+
+    val result = Await.ready(resultFuture, 2.seconds)
+    result.onComplete {
+        case Success(v) => println("EEEEEEEEEEEEEE", v)
+        case Failure(e) => println(e)
+        case _ => println("ALL")
+    }
+
 //    val userFilter = users.filter(_.userid === 1).result
-//    val resultFuture: Future[Seq[User]] = db.run(userFilter)
+//    var resultFuture: Future[Seq[User]] = db.run(userFilter)
 //
 //    Try(Await.ready(resultFuture, 5.second)) match {
 //        case Success(f) => f.value.get match {

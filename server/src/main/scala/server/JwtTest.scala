@@ -1,57 +1,51 @@
 package server
 
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directive1
-import akka.http.scaladsl.server.Directives.{complete, optionalHeaderValueByName, provide}
+import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim, JwtOptions}
 
-import scala.util.parsing.json.JSONObject
-
+import java.security.spec.PKCS8EncodedKeySpec
 import java.util.concurrent.TimeUnit
-import scala.util.{Try,Success,Failure}
-
-import java.time.Clock
-
-import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim, JwtHeader, JwtOptions}
-
-
-object TokenAuthorization {
-    private val secretKey = "super_secret_key"
-    private val header = "HS512"
-    private val tokenExpiryPeriodInDays = 999
-
-    def generateToken(email: String): String = {
-        println("Generating new token for: ", email)
-
-        val claims = JwtClaim(
-            JSONObject(Map(
-                "email" -> email,
-                "expiredAt" -> (System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenExpiryPeriodInDays))
-            )
-        ).toString())
-        Jwt.encode(claims)
-    }
-
-    def authenticated(jwtToken: String)  = {
-        jwtToken match {
-            case jwtToken if Jwt.isValid(jwtToken) => println("Token is OK")
-            case jwtToken if Jwt.isValid(jwtToken, JwtOptions(expiration = false)) => println("Token is expired")
-            case _ =>  println("Invalid token")
-        }
-
-    }
-
-    def getClaims(jwtToken: String): String =
-        Jwt.decodeRaw(jwtToken) match {
-            case Success(value) => value
-            case Failure(value) => ""
-        }
-}
+import scala.util.parsing.json.JSONObject
+import scala.util.{Failure, Success}
+import java.security.{KeyFactory, SecureRandom}
 
 object JwtTest extends App {
+    val email: String = "email@mail.ru"
+    val secretKey: String = "supersecretkey"
+    val algo = JwtAlgorithm.HS256
 
-    val token: String = TokenAuthorization.generateToken("user1@mail.ru")
 
+    val claims = JwtClaim(
+        JSONObject(Map(
+            "email" -> email,
+            "expiredAt" -> (System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(100))))
+                .toString())
+
+    var token = Jwt.encode(claims, "secret", algo)
     println("New token", token)
-    TokenAuthorization.authenticated(token)
-    println(TokenAuthorization.getClaims(token))
+
+//    token += "2"
+
+    println("Legit?", Jwt.isValid(token, "secret", Seq(algo)))
+
+    println("Expired?", ! Jwt.isValid(token, "secret", Seq(algo), JwtOptions(expiration = false)))
+
+//    Jwt.decodeRaw(token, "secret", Seq(JwtAlgorithm.HS256)) match {
+//        case Success(value) => println(Json.parse(value).as[Map[String, String]])
+//        case Failure(value) => println(Map.empty[String, String])
+//    }
+
+    val jsonMap = {
+        Jwt.decodeRaw(token, "secret", Seq(algo)) match {
+            case Success(value) => println()
+            case Failure(value) => println(Map.empty[String, String])
+        }
+    }
+
+    val claim2 = JSONObject(Map(
+        "email" -> email,
+        "expiredAt" -> (System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(100))
+    )).toString()
+
+    val token2 = Jwt.encode(claim2, "secretKey", JwtAlgorithm.HS256)
+    println(token2)
 }

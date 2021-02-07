@@ -19,5 +19,7 @@ libraryDependencies ++= Seq(
     "com.typesafe.slick" %% "slick-hikaricp" % "3.3.0",
     "com.pauldijou" %% "jwt-core" % "5.0.0",
     "de.heikoseeberger" %% "akka-http-play-json" % "1.20.0",
-    "com.typesafe.play" %% "play-json" % "2.6.7"
+    "com.typesafe.play" %% "play-json" % "2.6.7",
+    "org.json4s" %% "json4s-native" % "3.7.0-M8",
+    "com.jason-goodwin" %% "authentikat-jwt" % "0.4.5"
 )

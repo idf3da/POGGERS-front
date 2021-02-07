@@ -1,5 +1,11 @@
 server/target
-server-loar-test/target
+server-load-test/.bsp/
+server-load-test/project/target
+server-load-test/src/test/scala/.bsp/
+server-load-test/src/test/scala/target/
+server-load-test/src/test/scala/project/target
+server-load-test/target
+server-load-test/project-target
 server/.bsp
 server/.idea
 server/project/target

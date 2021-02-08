@@ -14,14 +14,14 @@ object TokenAuthorization {
     private val secretKey = "super_secret_key"
     private val tokenExpiryPeriodInDays = 365
 
-    def generateToken(username: String): String = {
+    def generateToken(userid: Int): String = {
         val claims = JwtClaim(
             JSONObject(Map(
-                "username" -> username,
+                "userid" -> userid,
                 "expiredAt" -> (System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenExpiryPeriodInDays))))
                     .toString())
         val token = Jwt.encode(claims, secretKey, JwtAlgorithm.HS256)
-        println("Generating new token for: ", username, token)
+        println("Generating new token for: ", userid, token)
         token
     }
 

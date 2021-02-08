@@ -5,10 +5,11 @@ import slick.jdbc.H2Profile.api._
 import java.sql.Timestamp
 
 case class RegisterUserRequest (
-                                           username: String,
-                                           password: String,
-                                           email: String
-                                   )
+                                       userid: Int,
+                                       username: String,
+                                       password: String,
+                                       email: String
+                               )
 
 case class LoginRequest(
                                username: String,
@@ -16,7 +17,7 @@ case class LoginRequest(
                        )
 
 case class CreatePostRequest (
-                                     creatorid: Int,
+                                    creatorid: Int,
                                      title: String,
                                      descriptorid: Int,
                                      description: String
@@ -27,7 +28,7 @@ class UsersTable(tag: Tag) extends Table[RegisterUserRequest](tag,"users") {
     def username  = column[String]("username")
     def password = column[String]("password")
     def email = column[String]("email")
-    def * = (username, password, email).mapTo[RegisterUserRequest]
+    def * = (userid, username, password, email).mapTo[RegisterUserRequest]
 }
 
 class PostsTable(tag: Tag) extends Table[CreatePostRequest](tag,"posts") {

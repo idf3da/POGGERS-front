@@ -11,34 +11,33 @@ class UserManagementService {
     private val db = Database.forConfig("db")
     private val users = TableQuery[UsersTable]
 
-    def userLogin(loginRequest: LoginRequest): String = {
+    def createUser(newUser: RegisterUserRequest):  (String, Int) = {
+        val insertUserQuery = users returning users.map(_.userid) += newUser
+        val resultFuture: Future[Int] = db.run(insertUserQuery)
+        Try(Await.ready(resultFuture, 5.second)) match {
+            case Success(f) => f.value.get match {
+                case Success(userid) => ("User registered.", userid)
+                case Failure(e) => (s"ERROR: ${e.getMessage}", 0)
+            }
+            case Failure(e) => (s"DB timeout: ${e.getMessage}", 0)
+        }
+
+    }
+
+    def userLogin(loginRequest: LoginRequest): (String, Int) = {
         val usernameFilter = users.filter(_.username === loginRequest.username).result
         val resultFuture = db.run(usernameFilter)
         Try(Await.ready(resultFuture, 5.second)) match {
             case Success(f) => f.value.get match {
                 case Success(res) => res.length match {
-                    case 1 => if (res.head.password == loginRequest.password) "Login successful." else "Wrong password."
-                    case 0 => "User not found."
-                    case _ => "Several users found."
+                    case 1 => if (res.head.password == loginRequest.password) ("Login successful.", res.head.userid) else ("Wrong password.", -1)
+                    case 0 => ("User not found.", -1)
+                    case _ => ("Several users found.", -1)
                 }
-                case Failure(e) => s"Login DB ERROR: ${e.getMessage}"
+                case Failure(e) => (s"Login DB ERROR: ${e.getMessage}", -1)
             }
-            case Failure(e) => s"DB timeout: ${e.getMessage}"
+            case Failure(e) => (s"DB timeout: ${e.getMessage}", -1)
         }
     }
-
-    def createUser(newUser: RegisterUserRequest):  String = {
-        val insertUserQuery = users += newUser
-        val resultFuture: Future[Int] = db.run(insertUserQuery)
-
-        Try(Await.ready(resultFuture, 5.second)) match {
-            case Success(f) => f.value.get match {
-                case Success(_) => "User registered."
-                case Failure(e) => s"ERROR: ${e.getMessage}"
-            }
-            case Failure(e) => s"DB timeout: ${e.getMessage}"
-        }
-    }
-
     def protectedContent: String  = "Super mega secret content that nobody needs to see if you know what I mean amirite?"
 }

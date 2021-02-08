@@ -9,6 +9,8 @@ import scala.concurrent.ExecutionContextExecutor
 import scala.io.StdIn
 
 /**
+ * TODO post/create requires creatorid, need to remove it same as in login/register
+ * TODO Be able to add userid but not require it in post json data
  * TODO createPost(); new route; get identity from token)
  * TODO Comments on posts(case class, CommentsTable; createComment(); get identity from token)
  */
@@ -28,3 +30,4 @@ object SNS2 extends App {
             .flatMap(_.unbind())
             .onComplete(_ => actorSystem.terminate())
 }
+

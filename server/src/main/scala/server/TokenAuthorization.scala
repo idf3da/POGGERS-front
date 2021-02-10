@@ -14,6 +14,9 @@ object TokenAuthorization {
     private val secretKey = "super_secret_key"
     private val tokenExpiryPeriodInDays = 365
 
+    def isValid(jwtToken: String): Boolean = Jwt.isValid(jwtToken, secretKey, Seq(JwtAlgorithm.HS256), JwtOptions())
+    def isExpired(jwtToken: String): Boolean = Jwt.isValid(jwtToken, secretKey, Seq(JwtAlgorithm.HS256), JwtOptions(expiration = false))
+
     def generateToken(userid: Int): String = {
         val claims = JwtClaim(
             JSONObject(Map(
@@ -29,8 +32,12 @@ object TokenAuthorization {
         optionalHeaderValueByName("Authorization").flatMap { tokenFromUser =>
             val jwtToken = tokenFromUser.get.split(" ")
             jwtToken(1) match {
-                case jwtToken if Jwt.isValid(jwtToken, secretKey, Seq(JwtAlgorithm.HS256), JwtOptions()) => provide(getClaims(jwtToken))
-                case jwtToken if Jwt.isValid(jwtToken, secretKey, Seq(JwtAlgorithm.HS256), JwtOptions(expiration = false)) => complete(StatusCodes.Unauthorized -> "Session expired.")
+                case jwtToken if isValid(jwtToken) => {
+                    val claims = getClaims(jwtToken)
+                    if (claims.contains("userid")) { provide(claims) }
+                    else { complete(StatusCodes.Unauthorized -> "Invalid Token claims.") }
+                }
+                case jwtToken if isExpired(jwtToken) => complete(StatusCodes.Unauthorized -> "Session expired.")
                 case _ =>  complete(StatusCodes.Unauthorized -> "Invalid Token")
             }
         }

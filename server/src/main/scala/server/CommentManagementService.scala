@@ -6,18 +6,18 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 
-class PostManagementService {
+class CommentManagementService {
     private val db = Database.forConfig("db")
-    private val posts = TableQuery[PostsTable]
+    private val comments = TableQuery[CommentsTable]
 
-    def createPost(newPost: CreatePostRequest, creatorid: Int): String = {
-        val newPostDB: CreatePostRequestDB = CreatePostRequestDB(creatorid, newPost.title, newPost.descriptorid, newPost.description)
-        val insertPostQuery = posts += newPostDB
+    def createComment(newComment: CreateCommentRequest, creatorid: Int): String = {
+        val newCommentDB: CreateCommentRequestDB = CreateCommentRequestDB(newComment.postid, creatorid, newComment.comment)
+        val insertPostQuery = comments += newCommentDB
         val resultFuture: Future[Int] = db.run(insertPostQuery)
 
         Try(Await.ready(resultFuture, 5.second)) match {
             case Success(f) => f.value.get match {
-                case Success(_) => "Post created."
+                case Success(_) => "Comment created."
                 case Failure(e) => s"ERROR: ${e.getMessage}"
             }
             case Failure(e) => s"DB timeout. $e"

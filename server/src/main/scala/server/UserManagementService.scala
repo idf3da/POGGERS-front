@@ -9,10 +9,11 @@ import scala.util.{Failure, Success, Try}
 class UserManagementService {
 
     private val db = Database.forConfig("db")
-    private val users = TableQuery[UsersTable]
+    private val users = TableQuery[UsersTableDB]
 
     def createUser(newUser: RegisterUserRequest):  (String, Int) = {
-        val insertUserQuery = users returning users.map(_.userid) += newUser
+        val newUserDB: RegisterUserRequestDB = RegisterUserRequestDB(-1, newUser.username, newUser.password, newUser.email)
+        val insertUserQuery = users returning users.map(_.userid) += newUserDB
         val resultFuture: Future[Int] = db.run(insertUserQuery)
         Try(Await.ready(resultFuture, 5.second)) match {
             case Success(f) => f.value.get match {

@@ -4,8 +4,16 @@ import slick.jdbc.H2Profile.api._
 
 import java.sql.Timestamp
 
+// For POST requests
 case class RegisterUserRequest (
-                                       userid: Int,
+                                       username: String,
+                                       password: String,
+                                       email: String
+                               )
+
+// For DB interaction
+case class RegisterUserRequestDB (
+                                        userid: Int,
                                        username: String,
                                        password: String,
                                        email: String
@@ -17,21 +25,46 @@ case class LoginRequest(
                        )
 
 case class CreatePostRequest (
-                                    creatorid: Int,
                                      title: String,
                                      descriptorid: Int,
                                      description: String
                              )
+
+case class CreatePostRequestDB (
+                                     creatorid: Int,
+                                     title: String,
+                                     descriptorid: Int,
+                                     description: String
+                             )
+
+case class CreateCommentRequest (
+                                    postid: Int,
+                                    comment: String,
+                                )
+
+case class CreateCommentRequestDB (
+                                        postid: Int,
+                                        userid: Int,
+                                        comment: String,
+                                )
 
 class UsersTable(tag: Tag) extends Table[RegisterUserRequest](tag,"users") {
     def userid = column[Int]("userid", O.PrimaryKey, O.AutoInc)
     def username  = column[String]("username")
     def password = column[String]("password")
     def email = column[String]("email")
-    def * = (userid, username, password, email).mapTo[RegisterUserRequest]
+    def * = (username, password, email).mapTo[RegisterUserRequest]
 }
 
-class PostsTable(tag: Tag) extends Table[CreatePostRequest](tag,"posts") {
+class UsersTableDB(tag: Tag) extends Table[RegisterUserRequestDB](tag,"users") {
+    def userid = column[Int]("userid", O.PrimaryKey, O.AutoInc)
+    def username  = column[String]("username")
+    def password = column[String]("password")
+    def email = column[String]("email")
+    def * = (userid, username, password, email).mapTo[RegisterUserRequestDB]
+}
+
+class PostsTable(tag: Tag) extends Table[CreatePostRequestDB](tag,"posts") {
     def postid = column[Int]("postid", O.PrimaryKey, O.AutoInc)
     def creatorid = column[Int]("creatorid")
     def title  = column[String]("title")
@@ -39,6 +72,15 @@ class PostsTable(tag: Tag) extends Table[CreatePostRequest](tag,"posts") {
     def created_at = column[Timestamp]("created_at")
     def updated_at = column[Timestamp]("updated_at")
     def description = column[String]("description")
-    def * = (creatorid, title, descriptorid, description).mapTo[CreatePostRequest]
+    def * = (creatorid, title, descriptorid, description).mapTo[CreatePostRequestDB]
+}
+
+class CommentsTable(tag: Tag) extends Table[CreateCommentRequestDB](tag,"comments") {
+    def commentid = column[Int]("comment", O.PrimaryKey, O.AutoInc)
+    def postid = column[Int]("postid")
+    def userid = column[Int]("userid")
+    def comment = column[String]("comment")
+    def updated_at = column[Timestamp]("updated_at")
+    def * = (postid, userid, comment).mapTo[CreateCommentRequestDB]
 }
 

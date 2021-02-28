@@ -48,6 +48,14 @@ case class CreateCommentRequestDB (
                                         comment: String,
                                 )
 
+case class Comment (
+                       commentid: Int,
+                       postid: Int,
+                       userid: Int,
+                       comment: String,
+                       updated_at: Timestamp
+                       )
+
 class UsersTable(tag: Tag) extends Table[RegisterUserRequest](tag,"users") {
     def userid = column[Int]("userid", O.PrimaryKey, O.AutoInc)
     def username  = column[String]("username")
@@ -75,12 +83,12 @@ class PostsTable(tag: Tag) extends Table[CreatePostRequestDB](tag,"posts") {
     def * = (creatorid, title, descriptorid, description).mapTo[CreatePostRequestDB]
 }
 
-class CommentsTable(tag: Tag) extends Table[CreateCommentRequestDB](tag,"comments") {
-    def commentid = column[Int]("comment", O.PrimaryKey, O.AutoInc)
+class CommentsTable(tag: Tag) extends Table[Comment](tag,"comments") {
+    def commentid = column[Int]("commentid", O.PrimaryKey, O.AutoInc)
     def postid = column[Int]("postid")
     def userid = column[Int]("userid")
     def comment = column[String]("comment")
-    def updated_at = column[Timestamp]("updated_at")
-    def * = (postid, userid, comment).mapTo[CreateCommentRequestDB]
+    def updated_at = column[Timestamp]("date")
+    def * = (commentid, postid, userid, comment, updated_at).mapTo[Comment]
 }
 

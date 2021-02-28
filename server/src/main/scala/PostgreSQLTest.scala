@@ -1,9 +1,12 @@
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives.complete
 import play.api.libs.json.{Json, Reads}
+import server.{CommentsTable}
 import slick.jdbc.H2Profile.api._
+import sun.invoke.empty.Empty
 
 import java.sql.Timestamp
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
@@ -50,23 +53,41 @@ class PostsTable(tag: Tag) extends Table[Post](tag,"posts") {
     def * = (creatorid, title, descriptorid, description).mapTo[Post]
 }
 
+
+
 object PostgreSQLTest extends App {
 
-    private val db = Database.forConfig("db")
-    private val users = TableQuery[UsersTable]
+    val db = Database.forConfig("db")
+    val postsTable = TableQuery[PostsTable]
+
+    val userid = 56749
 
 
-//    val usernameFilter = users.filter(_.username === "username1338").result
-    val insertUserQuery = users returning users.map(_.userid) += User("usernameg3th6446hg64g3t", "password", "7gtvy5t3gbyb5y3tg8by0")
-    val resultFuture = db.run(insertUserQuery)
+    def postsForUser(userid: Int): (String, Seq[PostsTable#TableElementType]) = {
+        val postsWithUserID = postsTable.filter(_.creatorid === userid).result
+        val resultFuture = db.run(postsWithUserID)
 
-    Try(Await.ready(resultFuture, 5.second)) match {
-        case Success(f) => f.value.get match {
-            case Success(userid) => println("User registered.", userid)
-            case Failure(e) => println(s"ERROR: ${e.getMessage}", 0)
+        Try(Await.ready(resultFuture, 5.second)) match {
+            case Success(f) => f.value.get match {
+                case Success(res) => res.length match {
+                    case 0 => ("No posts.", res)
+                    case l if l > 0 => ("Found posts.", res)
+                    case _ => (s"ERROR 1: ${res}", Seq.empty[PostsTable#TableElementType])
+                }
+                case Failure(e) => (s"ERROR 2: ${e.getMessage}", Seq.empty[PostsTable#TableElementType])
+                case _ => (s"ERROR 3: ${f}", Seq.empty[PostsTable#TableElementType])
+            }
+            case Failure(e) => (s"DB timeout. $e", Seq.empty[PostsTable#TableElementType])
         }
-        case Failure(e) => println(s"DB timeout: ${e.getMessage}", 0)
     }
+
+    val (userPostsResult, posts) = postsForUser(userid)
+    userPostsResult match {
+        case "No posts." => println((StatusCodes.NotFound, "No comments found for posts."))
+        case "Found posts." => println((StatusCodes.OK, posts))
+        case _ => println(StatusCodes.InternalServerError, userPostsResult)
+    }
+
 
 
 

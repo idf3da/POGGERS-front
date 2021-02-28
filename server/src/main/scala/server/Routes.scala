@@ -23,8 +23,7 @@ object Routes {
 
 class CommentManagementRoutes(service: CommentManagementService) extends PlayJsonSupport {
     implicit val CreateCommentRequestFormat: RootJsonFormat[CreateCommentRequest] = jsonFormat2(CreateCommentRequest)
-
-    val routes: Route = pathPrefix("comment") {
+    val routes: Route = pathPrefix("api" / "comments") {
         path("create") {
             (post & entity(as[CreateCommentRequest])) { createCommentRequest => {
                 TokenAuthorization.authenticated { credentials => {
@@ -37,6 +36,15 @@ class CommentManagementRoutes(service: CommentManagementService) extends PlayJso
                 }
             }
             }
+        } ~ path("for_post" / IntNumber) { commentid =>
+            get {
+                val (postCommentsResult, comments) = service.commentsForPost(commentid)
+                postCommentsResult match {
+                    case "No comments." => complete((StatusCodes.NotFound, "No comments found for posts."))
+                    case "Found comments." => complete((StatusCodes.OK, comments.toString()))
+                    case _ => complete(StatusCodes.InternalServerError, postCommentsResult)
+                }
+            }
         }
     }
 }
@@ -44,21 +52,31 @@ class CommentManagementRoutes(service: CommentManagementService) extends PlayJso
 class PostManagementRoutes(service: PostManagementService) extends PlayJsonSupport {
     implicit val CreatePostRequestFormat: RootJsonFormat[CreatePostRequest] = jsonFormat3(CreatePostRequest)
 
-    val routes: Route = pathPrefix("post") {
-        path("create") {
-            (post & entity(as[CreatePostRequest])) { createPostRequest => {
-                TokenAuthorization.authenticated { credentials => {
-                    val createPostResult: String = service.createPost(createPostRequest, credentials("userid").toString.toInt)
-                    createPostResult match {
-                        case "Post created." => complete((StatusCodes.OK, "Post created."))
-                        case _ => complete(StatusCodes.InternalServerError -> createPostResult)
+    val routes: Route =
+        pathPrefix("api" / "posts") {
+            path("create") {
+                (post & entity(as[CreatePostRequest])) { createPostRequest => {
+                    TokenAuthorization.authenticated { credentials => {
+                        val createPostResult: String = service.createPost(createPostRequest, credentials("userid").toString.toInt)
+                        createPostResult match {
+                            case "Post created." => complete((StatusCodes.OK, "Post created."))
+                            case _ => complete(StatusCodes.InternalServerError -> createPostResult)
+                        }
+                    }
                     }
                 }
                 }
-            }
+            } ~ path("for_user" / IntNumber) { userid =>
+                get {
+                    val (userPostsResult, posts) = service.postsForUser(userid)
+                    userPostsResult match {
+                        case "No posts." => complete((StatusCodes.NotFound, "No comments found for posts."))
+                        case "Found posts." => complete((StatusCodes.OK, posts.toString()))
+                        case _ => complete(StatusCodes.InternalServerError, userPostsResult)
+                    }
+                }
             }
         }
-    }
 }
 
 class UserManagementRoutes(service: UserManagementService) extends PlayJsonSupport {
@@ -66,7 +84,7 @@ class UserManagementRoutes(service: UserManagementService) extends PlayJsonSuppo
     implicit val LoginRequestFormat: RootJsonFormat[LoginRequest] = jsonFormat2(LoginRequest)
 
     val routes: Route =
-        pathPrefix("user") {
+        pathPrefix("api" / "users") {
             path("register") {
                 (post & entity(as[RegisterUserRequest])) { createUserRequest => {
                     val (createUserResult: String, userid: Int) = service.createUser(createUserRequest)
@@ -89,7 +107,7 @@ class UserManagementRoutes(service: UserManagementService) extends PlayJsonSuppo
                 }
                 }
             }
-        } ~ path("protectedcontent") {
+        } ~ path("api" / "protectedcontent") {
             get {
                 TokenAuthorization.authenticated { creds =>
                     val response = service.protectedContent + "\n" + creds.toString()

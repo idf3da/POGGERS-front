@@ -40,5 +40,22 @@ class UserManagementService {
             case Failure(e) => (s"DB timeout: ${e.getMessage}", -1)
         }
     }
+
+    def getUserInfo(userid: Int): (String, Seq[UsersTableDB#TableElementType]) = {
+        val userIDFilter = users.filter(_.userid === userid).result
+        val resultFuture = db.run(userIDFilter)
+        Try(Await.ready(resultFuture, 5.second)) match {
+            case Success(f) => f.value.get match {
+                case Success(res) => res.length match {
+                    case 1 => ("Found user.", res)
+                    case 0 => (s"User not found.", res)
+                    case _ => (s"Several users found.", res)
+                }
+                case Failure(e) => (s"User DB ERROR: ${e.getMessage}", Seq.empty)
+            }
+            case Failure(e) => (s"DB timeout: ${e.getMessage}", Seq.empty)
+        }
+    }
+
     def protectedContent: String  = "Super mega secret content that nobody needs to see if you know what I mean amirite?"
 }

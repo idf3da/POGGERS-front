@@ -84,7 +84,7 @@ class UserManagementRoutes(service: UserManagementService) extends PlayJsonSuppo
     implicit val LoginRequestFormat: RootJsonFormat[LoginRequest] = jsonFormat2(LoginRequest)
 
     val routes: Route =
-        pathPrefix("api" / "users") {
+        pathPrefix("api" / "user") {
             path("register") {
                 (post & entity(as[RegisterUserRequest])) { createUserRequest => {
                     val (createUserResult: String, userid: Int) = service.createUser(createUserRequest)
@@ -105,6 +105,15 @@ class UserManagementRoutes(service: UserManagementService) extends PlayJsonSuppo
                         case _ => complete(StatusCodes.InternalServerError -> userLoginResult)
                     }
                 }
+                }
+            } ~ path(IntNumber) { userid =>
+                get {
+                    val (userInfoResult, userInfo) = service.getUserInfo(userid)
+                    userInfoResult match {
+                        case "User not found." => complete((StatusCodes.NotFound, "No users found with that ID."))
+                        case "Found user." => complete((StatusCodes.OK, userInfo.toString()))
+                        case _ => complete(StatusCodes.InternalServerError, userInfoResult)
+                    }
                 }
             }
         } ~ path("api" / "protectedcontent") {

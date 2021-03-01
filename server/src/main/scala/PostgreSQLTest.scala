@@ -59,36 +59,23 @@ object PostgreSQLTest extends App {
 
     val db = Database.forConfig("db")
     val postsTable = TableQuery[PostsTable]
+    val usersTable = TableQuery[UsersTable]
 
-    val userid = 56749
+    val userid = 999999999
 
-
-    def postsForUser(userid: Int): (String, Seq[PostsTable#TableElementType]) = {
-        val postsWithUserID = postsTable.filter(_.creatorid === userid).result
-        val resultFuture = db.run(postsWithUserID)
-
-        Try(Await.ready(resultFuture, 5.second)) match {
-            case Success(f) => f.value.get match {
-                case Success(res) => res.length match {
-                    case 0 => ("No posts.", res)
-                    case l if l > 0 => ("Found posts.", res)
-                    case _ => (s"ERROR 1: ${res}", Seq.empty[PostsTable#TableElementType])
-                }
-                case Failure(e) => (s"ERROR 2: ${e.getMessage}", Seq.empty[PostsTable#TableElementType])
-                case _ => (s"ERROR 3: ${f}", Seq.empty[PostsTable#TableElementType])
+    val userIDFilter = usersTable.filter(_.userid === userid).result
+    val resultFuture = db.run(userIDFilter)
+    Try(Await.ready(resultFuture, 5.second)) match {
+        case Success(f) => f.value.get match {
+            case Success(res) => res.length match {
+                case 1 => println("Found user", res)
+                case 0 => println(s"User not found. ${res}")
+                case _ => println(s"Several users found. ${res}")
             }
-            case Failure(e) => (s"DB timeout. $e", Seq.empty[PostsTable#TableElementType])
+            case Failure(e) => println(s"User DB ERROR: ${e.getMessage}", -1)
         }
+        case Failure(e) => println(s"DB timeout: ${e.getMessage}", -1)
     }
-
-    val (userPostsResult, posts) = postsForUser(userid)
-    userPostsResult match {
-        case "No posts." => println((StatusCodes.NotFound, "No comments found for posts."))
-        case "Found posts." => println((StatusCodes.OK, posts))
-        case _ => println(StatusCodes.InternalServerError, userPostsResult)
-    }
-
-
 
 
 

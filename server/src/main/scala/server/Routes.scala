@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import spray.json.DefaultJsonProtocol._
 import spray.json.RootJsonFormat
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
 object Routes {
     val userManagementServiceInstance = new UserManagementService
@@ -18,31 +19,35 @@ object Routes {
     val commentManagementServiceInstance = new CommentManagementService
     val commentManagementRoutesInstance = new CommentManagementRoutes(commentManagementServiceInstance)
 
+
+
     val routes: Route = userManagementRoutesInstance.routes ~ postManagementRoutesInstance.routes ~ commentManagementRoutesInstance.routes
 }
 
 class CommentManagementRoutes(service: CommentManagementService) extends PlayJsonSupport {
     implicit val CreateCommentRequestFormat: RootJsonFormat[CreateCommentRequest] = jsonFormat2(CreateCommentRequest)
-    val routes: Route = pathPrefix("api" / "comments") {
-        path("create") {
-            (post & entity(as[CreateCommentRequest])) { createCommentRequest => {
-                TokenAuthorization.authenticated { credentials => {
-                    val createCommentResult: String = service.createComment(createCommentRequest, credentials("userid").toString.toInt)
-                    createCommentResult match {
-                        case "Comment created." => complete((StatusCodes.OK, "Comment created."))
-                        case _ => complete(StatusCodes.InternalServerError -> createCommentResult)
+    val routes: Route = cors() {
+        pathPrefix("api" / "comments") {
+            path("create") {
+                (post & entity(as[CreateCommentRequest])) { createCommentRequest => {
+                    TokenAuthorization.authenticated { credentials => {
+                        val createCommentResult: String = service.createComment(createCommentRequest, credentials("userid").toString.toInt)
+                        createCommentResult match {
+                            case "Comment created." => complete((StatusCodes.OK, "Comment created."))
+                            case _ => complete(StatusCodes.InternalServerError -> createCommentResult)
+                        }
+                    }
                     }
                 }
                 }
-            }
-            }
-        } ~ path("for_post" / IntNumber) { commentid =>
-            get {
-                val (postCommentsResult, comments) = service.commentsForPost(commentid)
-                postCommentsResult match {
-                    case "No comments." => complete((StatusCodes.NotFound, "No comments found for posts."))
-                    case "Found comments." => complete((StatusCodes.OK, comments.toString()))
-                    case _ => complete(StatusCodes.InternalServerError, postCommentsResult)
+            } ~ path("for_post" / IntNumber) { commentid =>
+                get {
+                    val (postCommentsResult, comments) = service.commentsForPost(commentid)
+                    postCommentsResult match {
+                        case "No comments." => complete((StatusCodes.NotFound, "No comments found for posts."))
+                        case "Found comments." => complete((StatusCodes.OK, comments.toString()))
+                        case _ => complete(StatusCodes.InternalServerError, postCommentsResult)
+                    }
                 }
             }
         }
@@ -52,7 +57,7 @@ class CommentManagementRoutes(service: CommentManagementService) extends PlayJso
 class PostManagementRoutes(service: PostManagementService) extends PlayJsonSupport {
     implicit val CreatePostRequestFormat: RootJsonFormat[CreatePostRequest] = jsonFormat3(CreatePostRequest)
 
-    val routes: Route =
+    val routes: Route = cors() {
         pathPrefix("api" / "posts") {
             path("create") {
                 (post & entity(as[CreatePostRequest])) { createPostRequest => {
@@ -77,13 +82,14 @@ class PostManagementRoutes(service: PostManagementService) extends PlayJsonSuppo
                 }
             }
         }
+    }
 }
 
 class UserManagementRoutes(service: UserManagementService) extends PlayJsonSupport {
     implicit val RegisterUserRequestFormat: RootJsonFormat[RegisterUserRequest] = jsonFormat3(RegisterUserRequest)
     implicit val LoginRequestFormat: RootJsonFormat[LoginRequest] = jsonFormat2(LoginRequest)
 
-    val routes: Route =
+    val routes: Route = cors() {
         pathPrefix("api" / "user") {
             path("register") {
                 (post & entity(as[RegisterUserRequest])) { createUserRequest => {
@@ -124,4 +130,5 @@ class UserManagementRoutes(service: UserManagementService) extends PlayJsonSuppo
                 }
             }
         }
+    }
 }

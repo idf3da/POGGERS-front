@@ -15,6 +15,12 @@ server/project/project/target/
 .metals/
 server/.attach_*
 .vscode/
+web/dist
+
+
+web/.browserslistrc
+web/.eslintrc.js
+web/.gitignore
 
 
 
@@ -90,3 +96,4 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+node_modules

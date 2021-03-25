@@ -7,6 +7,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 
+
 class CommentManagementService {
     private val db = Database.forConfig("db")
     private val comments = TableQuery[CommentsTable]

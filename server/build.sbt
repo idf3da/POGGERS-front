@@ -3,7 +3,7 @@ name := "server"
 version := "0.1"
 
 val AkkaVersion = "2.6.8"
-val AkkaHttpVersion = "10.2.3"
+val AkkaHttpVersion = "10.2.2"
 
 libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
@@ -21,5 +21,6 @@ libraryDependencies ++= Seq(
     "de.heikoseeberger" %% "akka-http-play-json" % "1.20.0",
     "com.typesafe.play" %% "play-json" % "2.6.7",
     "org.json4s" %% "json4s-native" % "3.7.0-M8",
-    "com.jason-goodwin" %% "authentikat-jwt" % "0.4.5"
+    "com.jason-goodwin" %% "authentikat-jwt" % "0.4.5",
+    "ch.megard" %% "akka-http-cors" % "1.1.1"
 )

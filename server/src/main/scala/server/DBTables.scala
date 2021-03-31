@@ -26,14 +26,14 @@ case class LoginRequest(
 
 case class CreatePostRequest (
                                      title: String,
-                                     descriptorid: Int,
+                                     descriptorid: String,
                                      description: String
                              )
 
 case class CreatePostRequestDB (
                                      creatorid: Int,
                                      title: String,
-                                     descriptorid: Int,
+                                     descriptorid: String,
                                      description: String
                              )
 
@@ -76,7 +76,7 @@ class PostsTable(tag: Tag) extends Table[CreatePostRequestDB](tag,"posts") {
     def postid = column[Int]("postid", O.PrimaryKey, O.AutoInc)
     def creatorid = column[Int]("creatorid")
     def title  = column[String]("title")
-    def descriptorid = column[Int]("descriptorid")
+    def descriptorid = column[String]("descriptorid")
     def created_at = column[Timestamp]("created_at")
     def updated_at = column[Timestamp]("updated_at")
     def description = column[String]("description")

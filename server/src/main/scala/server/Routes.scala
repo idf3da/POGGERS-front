@@ -58,7 +58,7 @@ class PostManagementRoutes(service: PostManagementService) extends PlayJsonSuppo
     implicit val CreatePostRequestFormat: RootJsonFormat[CreatePostRequest] = jsonFormat3(CreatePostRequest)
 
     val routes: Route = cors() {
-        pathPrefix("api" / "posts") {
+        pathPrefix("api" / "post") {
             path("create") {
                 (post & entity(as[CreatePostRequest])) { createPostRequest => {
                     TokenAuthorization.authenticated { credentials => {
@@ -78,6 +78,15 @@ class PostManagementRoutes(service: PostManagementService) extends PlayJsonSuppo
                         case "No posts." => complete((StatusCodes.NotFound, "No comments found for posts."))
                         case "Found posts." => complete((StatusCodes.OK, posts.toString()))
                         case _ => complete(StatusCodes.InternalServerError, userPostsResult)
+                    }
+                }
+            } ~ path("recent") {
+                get {
+                    val (recentPostsResult, posts) = service.recentPosts()
+                    recentPostsResult match {
+                        case "No posts." => complete((StatusCodes.NotFound, "No comments found for posts."))
+                        case "Found posts." => complete((StatusCodes.OK, posts))
+                        case _ => complete(StatusCodes.InternalServerError, recentPostsResult)
                     }
                 }
             }

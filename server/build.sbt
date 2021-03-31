@@ -22,5 +22,6 @@ libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play-json" % "2.6.7",
     "org.json4s" %% "json4s-native" % "3.7.0-M8",
     "com.jason-goodwin" %% "authentikat-jwt" % "0.4.5",
-    "ch.megard" %% "akka-http-cors" % "1.1.1"
+    "ch.megard" %% "akka-http-cors" % "1.1.1",
+    "net.liftweb" %% "lift-json" % "2.5+"
 )

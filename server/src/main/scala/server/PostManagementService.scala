@@ -1,5 +1,6 @@
 package server
 
+import play.api.libs.json.{Json, Writes}
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration._
@@ -9,6 +10,9 @@ import scala.util.{Failure, Success, Try}
 class PostManagementService {
     private val db = Database.forConfig("db")
     private val postsTable = TableQuery[PostsTable]
+
+    implicit val postWrites = Json.writes[PostsTable#TableElementType]
+    implicit val postsWrites = Writes.seq[PostsTable#TableElementType]
 
     def createPost(newPost: CreatePostRequest, creatorid: Int): String = {
         val newPostDB: CreatePostRequestDB = CreatePostRequestDB(creatorid, newPost.title, newPost.descriptorid, newPost.description)
@@ -24,21 +28,39 @@ class PostManagementService {
         }
     }
 
-    def postsForUser(userid: Int): (String, Seq[PostsTable#TableElementType]) = {
+    def postsForUser(userid: Int): (String, String) = {
         val postsWithUserID = postsTable.filter(_.creatorid === userid).result
         val resultFuture = db.run(postsWithUserID)
 
         Try(Await.ready(resultFuture, 5.second)) match {
             case Success(f) => f.value.get match {
                 case Success(res) => res.length match {
-                    case 0 => ("No posts.", res)
-                    case l if l > 0 => ("Found posts.", res)
-                    case _ => (s"ERROR 1: ${res}", Seq.empty[PostsTable#TableElementType])
+                    case 0 => ("No posts.", "{}")
+                    case l if l > 0 => ("Found posts.", Json.toJson(res).toString())
+                    case _ => (s"ERROR 1: ${res}", "{}")
                 }
-                case Failure(e) => (s"ERROR 2: ${e.getMessage}", Seq.empty[PostsTable#TableElementType])
-                case _ => (s"ERROR 3: ${f}", Seq.empty[PostsTable#TableElementType])
+                case Failure(e) => (s"ERROR 2: ${e.getMessage}", "{}")
+                case _ => (s"ERROR 3: ${f}", "{}")
             }
-            case Failure(e) => (s"DB timeout. $e", Seq.empty[PostsTable#TableElementType])
+            case Failure(e) => (s"DB timeout. $e", "{}")
+        }
+    }
+
+    def recentPosts(): (String, String) = {
+        val postsWithUserID = postsTable.take(10).result
+        val resultFuture = db.run(postsWithUserID)
+
+        Try(Await.ready(resultFuture, 5.second)) match {
+            case Success(f) => f.value.get match {
+                case Success(res) => res.length match {
+                    case 0 => ("No posts.", "{}")
+                    case l if l > 0 => ("Found posts.", Json.toJson(res).toString())
+                    case _ => (s"ERROR 1: ${res}", "{}")
+                }
+                case Failure(e) => (s"ERROR 2: ${e.getMessage}", "{}")
+                case _ => (s"ERROR 3: ${f}", "{}")
+            }
+            case Failure(e) => (s"DB timeout. $e", "{}")
         }
     }
 

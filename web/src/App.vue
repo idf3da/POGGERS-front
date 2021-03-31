@@ -77,37 +77,12 @@
 					<v-col cols="5">
 						<v-sheet min-height="90vh" rounded="lg">
 							<v-col>
-								<v-card class="ma-8" min-height="100px">
-									<v-card-title>
-										Title
+								<v-card v-for="post in posts" :key="post" class="ma-8" min-height="100px">
+									<v-card-title v-if="post.title">
+										{{ post.title }}
 									</v-card-title>
-									<v-img contain src="placeholder_img.png"></v-img>
-
-									<v-btn icon>
-										<v-icon>mdi-heart</v-icon>
-									</v-btn>
-									<v-btn icon>
-										<v-icon>mdi-comment</v-icon>
-									</v-btn>
-								</v-card>
-
-								<v-card class="ma-8" min-height="100px">
-									<v-card-title>
-										Title
-									</v-card-title>
-									<v-img contain src="placeholder_img.png"></v-img>
-									<v-btn icon>
-										<v-icon>mdi-heart</v-icon>
-									</v-btn>
-									<v-btn icon>
-										<v-icon>mdi-comment</v-icon>
-									</v-btn>
-								</v-card>
-								<v-card class="ma-8" min-height="100px">
-									<v-card-title>
-										Title
-									</v-card-title>
-									<v-img contain src="placeholder_img.png"></v-img>
+									{{ post.description }}
+									<my-image-component :hash="post.descriptorid"></my-image-component>
 									<v-btn icon>
 										<v-icon>mdi-heart</v-icon>
 									</v-btn>
@@ -121,7 +96,8 @@
 
 					<v-col cols="2" class="mr-8">
 						<v-sheet min-height="90vh" rounded="lg">
-							{{ data["data"] }}
+							TEXT
+							{{ posts }}
 						</v-sheet>
 					</v-col>
 				</v-row>
@@ -133,15 +109,65 @@
 <script>
 	import axios from "axios";
 
+	// const ipfs = VueIpfs.create();
+
 	export default {
 		data: () => ({
-			data: "Empty",
+			posts: {},
 		}),
-		mounted() {
-			axios.get("http://localhost:8080/api/comments/for_post/1").then((response) => {
-				this.data = response;
+		created() {
+			axios.get("http://localhost:9090/api/post/recent").then((response) => {
+				this.posts = JSON.parse(response["data"]);
+				// this.img = this.loadImage(this.posts[0]["descriptorid"]);
 			});
+
+			// //IPFS START
+			// const repoPath = "ipfs" + Math.random();
+			// const ipfs = new IPFS({ repo: repoPath });
+
+			// ipfs.on("ready", () => {
+			// 	let ipfsPath = this.input;
+			// 	ipfs.files.cat(ipfsPath, function(err, file) {
+			// 		if (err) {
+			// 			throw err;
+			// 		}
+			// 		let img_data = file.toString("base64");
+			// 		this.img = "data:image/png;base64," + img_data;
+			// 	});
+
+			// 	this.log = (line) => {
+			// 		document.getElementById("output").appendChild(document.createTextNode(`${line}\r\n`));
+			// 	};
+			// });
+
+			// (async () => {
+			// 	const node = await IPFS.create();
+			// 	node.bootstrap.add("/ip4/127.0.0.1/tcp/4001/p2p/12D3KooWD9BNsXhBvMiinAydUy4nk2SssytkndwBBQ2YGUqCnWxi");
+
+			// 	const stream = node.cat(this.posts[0]["descriptorid"]);
+
+			// 	for await (const chunk of stream) {
+			// 		this.data += chunk.toString();
+			// 	}
+
+			// 	this.img = "data:image/png;base64," + this.data.toString("base64");
+			// })().catch(console.error);
 		},
+		// methods: {
+		// 	loadImage: async function(hash) {
+		// 		try {
+		// 			const ipfs = await IPFS.create();
+		// 			let img = "data:image/png;base64,";
+		// 			for await (const chunk of ipfs.cat(hash)) {
+		// 				img = chunk.toString();
+		// 			}
+		// 			console.log(img);
+		// 			return img;
+		// 		} catch (error) {
+		// 			throw new Error(error);
+		// 		}
+		// 	},
+		// },
 	};
 </script>
 

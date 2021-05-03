@@ -4,6 +4,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{complete, _}
 import akka.http.scaladsl.server.Route
+import ch.megard.akka.http.cors.javadsl.settings.CorsSettings
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import spray.json.DefaultJsonProtocol._
 import spray.json.RootJsonFormat
@@ -126,7 +127,7 @@ class UserManagementRoutes(service: UserManagementService) extends PlayJsonSuppo
                     val (userInfoResult, userInfo) = service.getUserInfo(userid)
                     userInfoResult match {
                         case "User not found." => complete((StatusCodes.NotFound, "No users found with that ID."))
-                        case "Found user." => complete((StatusCodes.OK, userInfo.toString()))
+                        case "Found user." => complete((StatusCodes.OK, userInfo))
                         case _ => complete(StatusCodes.InternalServerError, userInfoResult)
                     }
                 }

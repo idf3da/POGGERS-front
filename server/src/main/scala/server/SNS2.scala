@@ -16,7 +16,7 @@ object SNS2 extends App {
 
 
     val bindingFuture = Http().newServerAt("localhost", 9090).bind(Routes.routes)
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    println(s"Server online at http://localhost:9090/\nPress RETURN to stop...")
     StdIn.readLine()
     bindingFuture
             .flatMap(_.unbind())

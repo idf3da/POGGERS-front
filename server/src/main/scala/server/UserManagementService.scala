@@ -1,5 +1,6 @@
 package server
 
+import play.api.libs.json.{JsNull, JsValue, Json, Writes}
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration._
@@ -10,6 +11,10 @@ class UserManagementService {
 
     private val db = Database.forConfig("db")
     private val users = TableQuery[UsersTableDB]
+
+    implicit val userWrites = Json.writes[UsersTableDB#TableElementType]
+    implicit val usersWrites = Writes.seq[UsersTableDB#TableElementType]
+
 
     def createUser(newUser: RegisterUserRequest):  (String, Int) = {
         val newUserDB: RegisterUserRequestDB = RegisterUserRequestDB(-1, newUser.username, newUser.password, newUser.email)
@@ -41,19 +46,19 @@ class UserManagementService {
         }
     }
 
-    def getUserInfo(userid: Int): (String, Seq[UsersTableDB#TableElementType]) = {
+    def getUserInfo(userid: Int): (String, JsValue) = {
         val userIDFilter = users.filter(_.userid === userid).result
         val resultFuture = db.run(userIDFilter)
         Try(Await.ready(resultFuture, 5.second)) match {
             case Success(f) => f.value.get match {
                 case Success(res) => res.length match {
-                    case 1 => ("Found user.", res)
-                    case 0 => (s"User not found.", res)
-                    case _ => (s"Several users found.", res)
+                    case 1 => ("Found user.", Json.toJson(res).apply(0))
+                    case 0 => (s"User not found.", JsNull)
+                    case _ => (s"Several users found.", Json.toJson(res))
                 }
-                case Failure(e) => (s"User DB ERROR: ${e.getMessage}", Seq.empty)
+                case Failure(e) => (s"User DB ERROR: ${e.getMessage}", JsNull)
             }
-            case Failure(e) => (s"DB timeout: ${e.getMessage}", Seq.empty)
+            case Failure(e) => (s"DB timeout: ${e.getMessage}", JsNull)
         }
     }
 

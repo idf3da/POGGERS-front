@@ -11,9 +11,3 @@ Better quality memes and less server load by decomposing them into primitives an
 
 ## Project DB scheme
 ![](project-info/db-scheme.png)
-
-## Creators & Contributors
-- Хорошаев Михаил
-- Гиль Даниил
-- Десятченко Илья
-- Косенко Дмитрий
